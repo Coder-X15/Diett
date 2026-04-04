@@ -1,0 +1,15 @@
+on:
+    push:
+        branches: [main]
+jobs:
+    train:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Run training script in Kaggle server
+              uses: Frederisk/kaggle-action@v1.0.0
+              with:
+                username: ${{ secrets.KAGGLE_USERNAME }}
+                key: ${{ secrets.KAGGLE_KEY }}
+                title: Model_Training
+                code_file: train/train.py
