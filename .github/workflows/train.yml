@@ -13,5 +13,5 @@ jobs:
                 username: ${{ secrets.KAGGLE_USERNAME }}
                 key: ${{ secrets.KAGGLE_KEY }}
                 title: Model_Training
-                kernel: ${{ secrets.KAGGLE_USERNAME }}/diett_training_slug
+                kernel: ${{ secrets.KAGGLE_USERNAME }}/diett-training-slug
                 code_file: train/train.py
