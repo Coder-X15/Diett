@@ -13,4 +13,4 @@ jobs:
                 username: ${{ secrets.KAGGLE_USERNAME }}
                 key: ${{ secrets.KAGGLE_KEY }}
                 title: diett-training-slug
-                code_file: train/train.py
+                code_file: train/train.ipynb
