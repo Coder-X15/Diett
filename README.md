@@ -22,6 +22,9 @@
 
 ## Development Resources:
 1. [Supabase Community - `supabase-go` package](https://github.com/supabase-community/supabase-go)
+2. [Medium.com - Accelerating your Golang backend with Supabase API](https://medium.com/@lengzuo/accelerating-your-golang-backend-with-supabase-api-23bd377cbae6)
+3. [Hashnode - Lightning Fast APIs: Building Golang CRUD Endpoints with Supabase⚡️](https://ryanm.hashnode.dev/lightning-fast-apis-building-golang-crud-endpoints-with-supabase)
+4. [How to Dockerize a React App: A Step-by-Step Guide for Developers](https://www.docker.com/blog/how-to-dockerize-react-app/)
 
 
 ## Iteration Tracking:

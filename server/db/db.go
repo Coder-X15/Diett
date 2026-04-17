@@ -3,13 +3,12 @@ package db
 import (
 	"os"
 
-	"github.com/supabase-community/gotrue-go/types"
 	"github.com/supabase-community/supabase-go"
 )
 
 // load environment variables from system
-var supabaseUrl string = os.Getenv("SUPABASE_URL")
-var supabaseKey string = os.Getenv("SUPABASE_KEY")
+var supabaseUrl string
+var supabaseKey string
 
 // internal methods to simplify logic
 // create client for Supabase interactions
@@ -21,59 +20,12 @@ func getClient() *supabase.Client {
 	return client
 }
 
-// client for use
-var client *supabase.Client = getClient()
+// client for use - initialized in main.go after loading .env
+var Client *supabase.Client
 
-// intended functions (templates for future implementation):
-// 1. Signup/ signin / signout
-// 2. Retrieve nutritional information for a given food item
-// 3. Store and retreive app settings for user
-// 4. Log user's diet
-
-// defining types for use
-type SignupRequest struct {
-	Email    string
-	Phone    string
-	Password string
-	Data     map[string]interface{}
+// Initialize the database client
+func Init() {
+	supabaseUrl = os.Getenv("SUPABASE_URL")
+	supabaseKey = os.Getenv("SUPABASE_KEY")
+	Client = getClient()
 }
-
-type SigninRequest struct {
-	Email    string
-	Password string
-}
-
-// signup
-func Signup(req SignupRequest) *types.SignupResponse {
-	var request types.SignupRequest = types.SignupRequest{
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Password: req.Password,
-		Data:     req.Data,
-	}
-	session, err := client.Auth.Signup(request)
-	if err != nil {
-		panic(err)
-	}
-	return session
-}
-
-// sign in
-func Signin(email, password string) types.Session {
-	session, err := client.SignInWithEmailPassword(email, password)
-	if err != nil {
-		panic(err)
-	}
-	return session
-}
-
-// sign out
-func Signout() {
-	client.Auth.Logout()
-}
-
-func GetNutritionalInfo() {}
-
-func StoreAppSettings() {}
-
-func RetrieveAppSettings() {}
