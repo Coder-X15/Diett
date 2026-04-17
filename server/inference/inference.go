@@ -1,6 +1,7 @@
 package inference
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -24,14 +25,15 @@ func IdentifyFood(w http.ResponseWriter, r *http.Request) {
 
 		// ensure the request body has an image argument
 		var req InferenceRequest
-		err := json.NewDecoder(r.Body).Decode(&req)
+		bodyBytes, _ := io.ReadAll(r.Body)
+		err := json.Unmarshal(bodyBytes, &req)
 		if err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
 		// make a POST request to the inference API with the request body
-		resp, err := http.Post(inferenceAPi, "application/json", r.Body)
+		resp, err := http.Post(inferenceAPi, "application/json", bytes.NewBuffer(bodyBytes))
 		if err != nil {
 			http.Error(w, "Failed to call inference API", http.StatusInternalServerError)
 			return

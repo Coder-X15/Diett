@@ -1,7 +1,9 @@
 package mealplanner
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 )
@@ -38,14 +40,15 @@ var mealPlannerApi string = os.Getenv("MEAL_PLANNER_API")
 func SendRequestToMealPlannerAPI(endpoint string, w http.ResponseWriter, r *http.Request) {
 	// send a request to the meal planner API using the request body
 	var mealplan Mealplan // the result from the meal planner API will be a meal plan for a day
-	err := json.NewDecoder(r.Body).Decode(&mealplan)
+	bodyBytes, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &mealplan)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	// make a POST request to the meal planner API with the request body
-	resp, err := http.Post(mealPlannerApi+endpoint, "application/json", r.Body)
+	resp, err := http.Post(mealPlannerApi+endpoint, "application/json", bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		http.Error(w, "Failed to call meal planner API", http.StatusInternalServerError)
 		return
@@ -74,14 +77,15 @@ func PlanMeal(w http.ResponseWriter, r *http.Request) {
 func GetNutritionalInfo(w http.ResponseWriter, r *http.Request) {
 	// send a request to the meal planner API using the request body
 	var mealplan Mealplan // the result from the meal planner API will be a meal plan for a day
-	err := json.NewDecoder(r.Body).Decode(&mealplan)
+	bodyBytes, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &mealplan)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	// make a POST request to the meal planner API with the request body
-	resp, err := http.Post(mealPlannerApi+"/nutrition", "application/json", r.Body)
+	resp, err := http.Post(mealPlannerApi+"/nutrition", "application/json", bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		http.Error(w, "Failed to call meal planner API", http.StatusInternalServerError)
 		return
@@ -91,8 +95,13 @@ func GetNutritionalInfo(w http.ResponseWriter, r *http.Request) {
 	// write the response from the meal planner API back to the client
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
-	var nutrition Nutrition
-	if err := json.NewEncoder(w).Encode(nutrition); err != nil {
+	
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, "Failed to read response", http.StatusInternalServerError)
+		return
+	}
+	if _, err := w.Write(respBody); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 		return
 	}
