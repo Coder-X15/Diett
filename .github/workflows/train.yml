@@ -14,3 +14,15 @@ jobs:
                 key: ${{ secrets.KAGGLE_KEY }}
                 title: train
                 code_file: train/train.py
+            - name: Retrieve training logs
+              env:
+                KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+                KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+              run: |
+                mkdir -p logs
+                kaggle kernels output ${KAGGLE_USERNAME}/train -p logs
+            - name: Publish the training log a release artifact
+              uses: actions/upload-artifact@v2
+              with:
+                name: training-logs
+                path: logs/train.log
