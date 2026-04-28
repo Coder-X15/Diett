@@ -26,7 +26,8 @@ def setup() -> None:
 
 def train_mock() -> None:
     print("This is a mock training function")
-    command("echo 'Trained' >> Diett/train.txt")
+    os.chdir("Diett/train")
+    command("echo 'Trained' >> train.txt")
 
 if __name__ == "__main__":
     setup()    
