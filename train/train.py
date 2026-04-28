@@ -7,8 +7,11 @@ import dotenv
 import torch
 import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath('.'))
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 from model.model import get_model, train, evaluate
 from model.dataloader import get_dataloader
 
