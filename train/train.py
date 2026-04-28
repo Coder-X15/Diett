@@ -61,7 +61,7 @@ def train() -> None:
             )
 def train_mock() -> None:
     print("This is a mock training function")
-    command("echo 'Training complete!' >> training.txt")
+    # command("echo 'Training complete!' >> training.txt")
 
 if __name__ == "__main__":
     setup()
