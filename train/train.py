@@ -3,7 +3,8 @@
 # we need to set up our environment in the Kaggle server so maybe we'll need to clone this repo
 import os
 import subprocess
-from model import get_model, train, evaluate,  get_dataloader
+from .model.model import get_model, train, evaluate
+from .model.dataloader import get_dataloader
 import dotenv
 import torch
 import os
@@ -60,7 +61,7 @@ def train() -> None:
             )
 def train_mock() -> None:
     print("This is a mock training function")
-    # command("echo 'Training complete!' >> training.txt")
+    command("echo 'Training complete!' >> training.txt")
 
 if __name__ == "__main__":
     setup()
