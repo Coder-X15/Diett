@@ -20,11 +20,11 @@ jobs:
                 KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
               run: |
                 mkdir -p logs
-                kaggle kernels output ${KAGGLE_USERNAME}/train -p ./train.txt
+                kaggle kernels output ${KAGGLE_USERNAME}/train -p ./log
             - name: Listing the downloaded logs
               run: ls -la .
             - name: Publish the training log a release artifact
               uses: actions/upload-artifact@v4
               with:
                 name: training-logs
-                path: train.txt
+                path: ./train.txt
