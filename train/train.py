@@ -1,39 +1,11 @@
 #! /bin/usr/env python3
-
-# we need to set up our environment in the Kaggle server so maybe we'll need to clone this repo
-import os
-import subprocess
-import dotenv
-import torch
-import os
-import sys
-from pathlib import Path
-
-# Add the project root to Python path
-train_root = Path(__file__).parent
-sys.path.insert(0, str(train_root))
 from model import get_model, train, evaluate
 from dataloader import get_dataloader
+import torch
+import os
+import dotenv
 
 dotenv.load_dotenv()
-
-
-def command(cmd : str) -> None:
-    print(f"Running command: {cmd}")
-    result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print(result.stdout.decode())
-    if result.stderr:
-        print(result.stderr.decode())
-
-def setup() -> None:
-    # Clone the repository
-    command("git clone https://github.com/Coder-X15/Diett.git")
-    # Change to the train directory
-    os.chdir("Diett/train")
-    # Install the requirements
-    command("pip install -r requirements.txt")
-    
-
 def train() -> None:
     model = get_model(
         num_classes=int(os.getenv("NUM_CLASSES", 10))
@@ -66,10 +38,3 @@ def train() -> None:
             criterion,
             device
             )
-def train_mock() -> None:
-    print("This is a mock training function")
-    command("echo 'Training complete!' >> training.txt")
-
-if __name__ == "__main__":
-    setup()    
-    train_mock()
