@@ -3,8 +3,7 @@
 # we need to set up our environment in the Kaggle server so maybe we'll need to clone this repo
 import os
 import subprocess
-from model.model import get_model, train, evaluate
-from model.dataloader import get_dataloader
+from model import get_model, train, evaluate,  get_dataloader
 import dotenv
 import torch
 import os
