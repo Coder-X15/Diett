@@ -23,8 +23,8 @@ jobs:
                 kaggle kernels output ${KAGGLE_USERNAME}/train -p ./log
             - name: Listing the downloaded logs
               run: ls -la ./log
-            # - name: Publish the training log a release artifact
-            #   uses: actions/upload-artifact@v4
-            #   with:
-            #     name: training-logs
-            #     path: ./train/train.txt
+            - name: Publish the training log a release artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: training-logs
+                path: ./log/mock_model.joblib
