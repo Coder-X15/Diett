@@ -12,8 +12,8 @@ from pathlib import Path
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-from model.model import get_model, train, evaluate
-from model.dataloader import get_dataloader
+from train.model import get_model, train, evaluate
+from train.dataloader import get_dataloader
 
 dotenv.load_dotenv()
 
