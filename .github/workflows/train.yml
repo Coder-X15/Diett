@@ -22,7 +22,7 @@ jobs:
                 mkdir -p logs
                 kaggle kernels output ${KAGGLE_USERNAME}/train -p ./log
             - name: Listing the downloaded logs
-              run: ls -la ./train/
+              run: ls -la ./log
             # - name: Publish the training log a release artifact
             #   uses: actions/upload-artifact@v4
             #   with:
