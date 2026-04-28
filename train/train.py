@@ -3,11 +3,14 @@
 # we need to set up our environment in the Kaggle server so maybe we'll need to clone this repo
 import os
 import subprocess
-from .model.model import get_model, train, evaluate
-from .model.dataloader import get_dataloader
 import dotenv
 import torch
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath('.'))
+from model.model import get_model, train, evaluate
+from model.dataloader import get_dataloader
 
 dotenv.load_dotenv()
 
@@ -26,6 +29,7 @@ def setup() -> None:
     os.chdir("Diett/train")
     # Install the requirements
     command("pip install -r requirements.txt")
+    
 
 def train() -> None:
     model = get_model(
@@ -64,5 +68,5 @@ def train_mock() -> None:
     command("echo 'Training complete!' >> training.txt")
 
 if __name__ == "__main__":
-    setup()
+    setup()    
     train_mock()
