@@ -26,6 +26,7 @@ def setup() -> None:
 
 def train_mock() -> None:
     print("This is a mock training function")
+    command("echo 'Trained' >> trained.txt")
 
 if __name__ == "__main__":
     setup()    
