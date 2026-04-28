@@ -29,14 +29,6 @@ def command(cmd : str) -> None:
     print(result.stdout.decode())
     if result.stderr:
         print(result.stderr.decode())
-
-def setup() -> None:
-    # Clone the repository
-    command("git clone https://github.com/Coder-X15/Diett.git")
-    # Change to the train directory
-    os.chdir("Diett/train")
-    # Install the requirements
-    command("pip install -r requirements.txt")
     
 
 def train_mock() -> None:
@@ -151,3 +143,6 @@ def train() -> None:
             criterion,
             device
             )
+        
+if __name__ == "__main__":
+    train_mock()
