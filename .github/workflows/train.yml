@@ -12,8 +12,8 @@ jobs:
               with:
                 username: ${{ secrets.KAGGLE_USERNAME }}
                 key: ${{ secrets.KAGGLE_KEY }}
-                title: traincaller
-                code_file: train/traincaller.py
+                title: train
+                code_file: train/train.py
             - name: Retrieve training logs
               env:
                 KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -23,8 +23,8 @@ jobs:
                 kaggle kernels output ${KAGGLE_USERNAME}/train -p ./log
             - name: Listing the downloaded logs
               run: ls -la ./train/
-            - name: Publish the training log a release artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: training-logs
-                path: ./train/train.txt
+            # - name: Publish the training log a release artifact
+            #   uses: actions/upload-artifact@v4
+            #   with:
+            #     name: training-logs
+            #     path: ./train/train.txt
