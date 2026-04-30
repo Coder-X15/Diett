@@ -47,6 +47,7 @@ def command(cmd : str) -> None:
 
 ## --- DOWNLOADING THE DATASET ---
 command("kaggle datasets download cdart99/food20dataset -p . --unzip")
+
 ## --- DATA LOADING AND MODEL DEFINITIONS ---
 # 1. We're using the pretrained ResNet-18 model
 
@@ -142,18 +143,20 @@ def train_loop() -> None:
             optimizer,
             device
             )
-        print(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}")
-        evaluate(
+        
+        eval_loss, accuracy = evaluate(
             model,
             validation_dataloader,
             criterion,
             device
             )
+        print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Validation Loss: {eval_loss:.4f}, Accuracy: {accuracy:.4f}")
     # save model
     torch.save(model.state_dict(), "model.pth")
         
 if __name__ == "__main__":
     # checking GPU specs
     command("nvidia-smi")
-    command("pip install --upgrade torch torchvision")
+    # Install torch/torchvision with explicit CUDA 12 support to match cuml-cu12 requirements
+    command("pip install --upgrade torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu124")
     train_loop()
