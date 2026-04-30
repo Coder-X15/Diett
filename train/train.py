@@ -16,8 +16,8 @@ from joblib import dump
 import torch
 import torchvision.models as models
 import tqdm
-import torchvision.datasets as ImageFolder
-import torchvision.transforms as transforms
+from torchvision.datasets import ImageFolder
+from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 
 # GLOBALS
