@@ -20,6 +20,7 @@ from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 
+device = None 
 try:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Test CUDA availability
@@ -28,7 +29,7 @@ try:
 except RuntimeError:
     device = torch.device('cpu')
     print("CUDA unavailable, falling back to CPU")
-    
+
 # GLOBALS
 TRAIN_DATA_DIR = os.getenv("TRAIN_DATA_DIR", "food20dataset/train_set")
 VALIDATION_DATA_DIR = os.getenv("VALIDATION_DATA_DIR", "food20dataset/test_set")
@@ -152,4 +153,6 @@ def train_loop() -> None:
     torch.save(model.state_dict(), "model.pth")
         
 if __name__ == "__main__":
+    # checking GPU specs
+    command("nvidia-smi")
     train_loop()
