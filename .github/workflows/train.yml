@@ -12,7 +12,7 @@ jobs:
               with:
                 username: ${{ secrets.KAGGLE_USERNAME }}
                 key: ${{ secrets.KAGGLE_KEY }}
-                enable_gpu: disable
+                enable_gpu: enable
                 title: train
                 code_file: train/train.py
             - name: Retrieve training logs

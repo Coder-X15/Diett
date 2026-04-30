@@ -154,4 +154,5 @@ def train_loop() -> None:
         
 if __name__ == "__main__":
     # checking GPU specs
+    command("nvidia-smi")
     train_loop()
