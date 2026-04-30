@@ -2,7 +2,4 @@ dotenv
 torch
 torchvision
 tqdm
-scikit-learn
-numpy
-pandas
-matplotlib
+kagglehub

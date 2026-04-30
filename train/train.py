@@ -19,8 +19,17 @@ import tqdm
 import torchvision.datasets as ImageFolder
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+import kagglehub
 
-dotenv.load_dotenv()
+path = kagglehub.dataset_download("cdart99/food20dataset")
+
+# GLOBALS
+TRAIN_DATA_DIR = os.getenv("TRAIN_DATA_DIR", "food20dataset/train_set")
+VALIDATION_DATA_DIR = os.getenv("VALIDATION_DATA_DIR", "food20dataset/test_set")
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 32))
+NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 10))
+
+print("Path to dataset files:", path)
 
 ## --- COMMAND DEFINITIONS ---
 def command(cmd : str) -> None:
@@ -29,19 +38,6 @@ def command(cmd : str) -> None:
     print(result.stdout.decode())
     if result.stderr:
         print(result.stderr.decode())
-    
-
-def train_mock() -> None:
-    data = load_iris()
-    X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, test_size=0.2, random_state=42)
-    model = LogisticRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Mock training completed with accuracy: {accuracy:.4f}")
-
-    # dump the model to a file
-    dump(model, "mock_model.joblib")
 
 ## --- DATA LOADING AND MODEL DEFINITIONS ---
 # 1. We're using the pretrained ResNet-18 model
@@ -54,7 +50,7 @@ def get_model(num_classes):
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
     return model
 
-# defining the training loop
+# defining each training epoch
 def train(model, dataloader, criterion, optimizer, device):
     model.train()  # set the model to training mode
     running_loss = 0.0
@@ -73,6 +69,7 @@ def train(model, dataloader, criterion, optimizer, device):
     epoch_loss = running_loss / len(dataloader.dataset)
     return epoch_loss
 
+# defining the evaluation step
 def evaluate(model, dataloader, criterion, device):
     model.eval()  # set the model to evaluation mode
     running_loss = 0.0
@@ -106,28 +103,30 @@ transform = transforms.Compose([
 
 def get_dataloader(data_dir, batch_size):
     # load the dataset from the specified directory and apply the transformations
+    # since our dataset contains sub-folders for each class with the corresponding images in them,
     dataset = ImageFolder(root=data_dir, transform=transform)
+    print(dataset.classes)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return dataloader
 
 ## --- TRAINING LOOP ---
-def train() -> None:
-    model = get_model(
-        num_classes=int(os.getenv("NUM_CLASSES", 10))
-        )  # assuming we have 10 classes
+def train_loop() -> None:
     train_dataloader = get_dataloader(
-        data_dir=os.getenv("TRAIN_DATA_DIR", "data"),
-        batch_size=int(os.getenv("BATCH_SIZE", 32))
+        data_dir=TRAIN_DATA_DIR,
+        batch_size=BATCH_SIZE
         )
     validation_dataloader = get_dataloader(
-        data_dir=os.getenv("VALIDATION_DATA_DIR", "data"),
-        batch_size=int(os.getenv("BATCH_SIZE", 32))
+        data_dir=VALIDATION_DATA_DIR,
+        batch_size=BATCH_SIZE
         )
+    model = get_model(
+        num_classes= len(train_dataloader.dataset.classes)
+        )  # assuming we have 10 classes 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    num_epochs = int(os.getenv("NUM_EPOCHS", 10))
+    num_epochs = NUM_EPOCHS
     for epoch in range(num_epochs):
         epoch_loss = train(
             model,
@@ -143,6 +142,8 @@ def train() -> None:
             criterion,
             device
             )
+    # save model
+    torch.save(model.state_dict(), "model.pth")
         
 if __name__ == "__main__":
-    train_mock()
+    train_loop()
