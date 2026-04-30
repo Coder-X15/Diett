@@ -155,4 +155,5 @@ def train_loop() -> None:
 if __name__ == "__main__":
     # checking GPU specs
     command("nvidia-smi")
+    command("pip install --upgrade torch torchvision")
     train_loop()
