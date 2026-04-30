@@ -20,6 +20,15 @@ from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 
+try:
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # Test CUDA availability
+    if device.type == 'cuda':
+        torch.zeros(1).to(device)
+except RuntimeError:
+    device = torch.device('cpu')
+    print("CUDA unavailable, falling back to CPU")
+    
 # GLOBALS
 TRAIN_DATA_DIR = os.getenv("TRAIN_DATA_DIR", "food20dataset/train_set")
 VALIDATION_DATA_DIR = os.getenv("VALIDATION_DATA_DIR", "food20dataset/test_set")
@@ -122,7 +131,6 @@ def train_loop() -> None:
         )  # assuming we have 10 classes 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     num_epochs = NUM_EPOCHS
     for epoch in range(num_epochs):
