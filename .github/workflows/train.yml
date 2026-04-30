@@ -14,6 +14,8 @@ jobs:
                 key: ${{ secrets.KAGGLE_KEY }}
                 title: train
                 code_file: train/train.py
+                datasets: |
+                  cdart99/food20dataset
             - name: Retrieve training logs
               env:
                 KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}

@@ -19,9 +19,6 @@ import tqdm
 import torchvision.datasets as ImageFolder
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import kagglehub
-
-path = kagglehub.dataset_download("cdart99/food20dataset")
 
 # GLOBALS
 TRAIN_DATA_DIR = os.getenv("TRAIN_DATA_DIR", "food20dataset/train_set")
