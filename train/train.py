@@ -26,7 +26,6 @@ VALIDATION_DATA_DIR = os.getenv("VALIDATION_DATA_DIR", "food20dataset/test_set")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", 32))
 NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 10))
 
-print("Path to dataset files:", path)
 
 ## --- COMMAND DEFINITIONS ---
 def command(cmd : str) -> None:
@@ -36,6 +35,8 @@ def command(cmd : str) -> None:
     if result.stderr:
         print(result.stderr.decode())
 
+## --- DOWNLOADING THE DATASET ---
+command("kaggle datasets download cdart99/food20dataset -p . --unzip")
 ## --- DATA LOADING AND MODEL DEFINITIONS ---
 # 1. We're using the pretrained ResNet-18 model
 
