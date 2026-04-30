@@ -155,4 +155,7 @@ def train_loop() -> None:
 if __name__ == "__main__":
     # checking GPU specs
     command("nvidia-smi")
+    command("pip list | grep torch")
+    # Add at the very start of train.py before importing torch
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "torch==2.0.1", "torchvision", "torchaudio", "--index-url", "https://download.pytorch.org/whl/cu118"])
     train_loop()
