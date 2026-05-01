@@ -7,11 +7,14 @@ import subprocess
 import os
 import sys
 from pathlib import Path
-# mock training using the sklearn iris dataset of a simple logistic regression model
-from sklearn.datasets import load_iris
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+# --- 1. FORCE THE INSTALLATION FIRST ---
+# We do this before importing 'torch' so the process doesn't lock the old version in memory.
+print("Installing P100-compatible Torch version...")
+subprocess.run(
+    "pip install --force-reinstall torch==2.4.0+cu121 torchvision==0.19.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121", 
+    shell=True, check=True
+)
+
 from joblib import dump
 import torch
 from torchvision.models import resnet18, ResNet18_Weights
@@ -152,5 +155,5 @@ if __name__ == "__main__":
     # Install torch/torchvision with explicit CUDA 12 support to match cuml-cu12 requirements
     # command("pip install --upgrade torch torchvision")
     # Force-install a version that specifically supports Compute Capability 6.0
-    command("pip install --force-reinstall torch==2.4.0+cu121 torchvision==0.19.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121")
+    # command("pip install --force-reinstall torch==2.4.0+cu121 torchvision==0.19.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121")
     train_loop()
