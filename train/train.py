@@ -158,5 +158,5 @@ if __name__ == "__main__":
     # checking GPU specs
     command("nvidia-smi")
     # Install torch/torchvision with explicit CUDA 12 support to match cuml-cu12 requirements
-    command("pip install torch==2.10.0 torchvision==0.24.1")
+    command("pip install --upgrade torch torchvision")
     train_loop()
