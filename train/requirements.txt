@@ -1,5 +1,0 @@
-dotenv
-torch
-torchvision
-tqdm
-kagglehub

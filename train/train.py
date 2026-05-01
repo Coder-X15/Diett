@@ -156,3 +156,4 @@ if __name__ == "__main__":
     # Force-install a version that specifically supports Compute Capability 6.0
     # command("pip install --force-reinstall torch==2.4.0+cu121 torchvision==0.19.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121")
     train_loop()
+    command("rm -rf food20dataset")
