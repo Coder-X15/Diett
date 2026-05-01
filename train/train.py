@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from joblib import dump
 import torch
-import torchvision.models as models
+from torchvision.models import resnet18, ResNet18_Weights
 import tqdm
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
@@ -42,10 +42,10 @@ command("kaggle datasets download cdart99/food20dataset -p . --unzip")
 # 1. We're using the pretrained ResNet-18 model
 
 def get_model(num_classes):
-    model = models.resnet18(pretrained=True)
+    # Use the new weights API
+    weights = ResNet18_Weights.DEFAULT
+    model = resnet18(weights=weights)
 
-    # modify the last layer of the model
-    # to match the number of classes in our dataset
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
     return model
 
@@ -150,5 +150,5 @@ if __name__ == "__main__":
     # checking GPU specs
     command("nvidia-smi")
     # Install torch/torchvision with explicit CUDA 12 support to match cuml-cu12 requirements
-    command("pip install --upgrade torch torchvision")
+    # command("pip install --upgrade torch torchvision")
     train_loop()
