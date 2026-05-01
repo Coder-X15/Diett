@@ -1,5 +1,4 @@
 #! /bin/usr/env python3
-import torch
 import os
 import dotenv
 import os
