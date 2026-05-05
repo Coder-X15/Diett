@@ -123,7 +123,7 @@ def train_loop() -> None:
         num_classes= len(train_dataloader.dataset.classes)
         )
     open("classes.txt", "w").write(",".join(train_dataloader.dataset.classes))  # save class names for later use in inference
-    device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -147,7 +147,7 @@ def train_loop() -> None:
         print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Validation Loss: {eval_loss:.4f}, Accuracy: {accuracy:.4f}")
     # save model
     torch.onnx.export(model, 
-                      torch.cuda.FloatTensor(torch.randn(1, 3, 224, 224)), 
+                      torch.randn(1, 3, 224, 224, device=device), 
                       "model.onnx",
                       export_params=True,    # Store weights inside the file
                       opset_version=12,      # Version 12 is highly stable for ResNet
