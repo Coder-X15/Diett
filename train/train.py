@@ -106,7 +106,6 @@ def get_dataloader(data_dir, batch_size):
     # load the dataset from the specified directory and apply the transformations
     # since our dataset contains sub-folders for each class with the corresponding images in them,
     dataset = ImageFolder(root=data_dir, transform=transform)
-    print(dataset.classes)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return dataloader
 
@@ -122,7 +121,8 @@ def train_loop() -> None:
         )
     model = get_model(
         num_classes= len(train_dataloader.dataset.classes)
-        )  # assuming we have 10 classes 
+        )
+    open("classes.txt", "w").write(",".join(train_dataloader.dataset.classes))  # save class names for later use in inference
     device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
     criterion = torch.nn.CrossEntropyLoss()
@@ -146,7 +146,15 @@ def train_loop() -> None:
             )
         print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Validation Loss: {eval_loss:.4f}, Accuracy: {accuracy:.4f}")
     # save model
-    torch.save(model.state_dict(), "model.pth")
+    torch.onnx.export(model, 
+                      torch.randn(1, 3, 224, 224), 
+                      "model.onnx",
+                      export_params=True,    # Store weights inside the file
+                      opset_version=12,      # Version 12 is highly stable for ResNet
+                      do_constant_folding=True, # Basic optimization pass
+                      input_names=['input'], 
+                      output_names=['output'],
+                      dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}})  
         
 if __name__ == "__main__":
     # checking GPU specs

@@ -24,8 +24,21 @@ jobs:
                 kaggle kernels output ${KAGGLE_USERNAME}/train -p ./log
             - name: Listing the downloaded logs
               run: ls -la ./log
-            - name: Publish the training log a release artifact
-              uses: actions/upload-artifact@v4
+            - name: Publishing the model.pth file as an artifact
+              uses: actions/upload-artifact@v2
               with:
-                name: training-logs
+                name: trained-model
                 path: ./log/model.pth
+    #         - name: Moving the model.pth file to services/inference
+    #           run: mv ./log/model.pth ./services/inference/model.pth
+    # deploy:
+    #     needs: train
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - uses: actions/checkout@v2
+    #         - name: Deploy on AWS
+    #           uses: aws-actions/configure-aws-credentials@v1
+    #           with:
+    #               aws-access-key-id: {{ secrets.AWS_ACCESS_KEY_ID }}
+    #               aws-secret-access-key: {{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #               aws-region: ap-south-2

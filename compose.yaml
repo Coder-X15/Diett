@@ -1,12 +1,20 @@
 services:
-  diett-frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - diett-apiserver
+  # diett-frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - diett-apiserver
 
   diett-apiserver:
     build: ./server
     ports:
       - "8080:8080"
+
+  inference:
+    build: ./services/inference
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_PATH=/app/model.onnx
+      - CLASSES_PATH=/app/classes.txt

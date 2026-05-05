@@ -50,6 +50,10 @@ func main() {
 		}
 
 		signupResp, err := auth.Auth.Signup(req)
+		if err != nil {
+			http.Error(w, "Failed to sign up: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 		user := signupResp.User
 
 		w.Header().Set("Content-Type", "application/json")
@@ -66,6 +70,10 @@ func main() {
 			return
 		}
 		signinResp, err := auth.Auth.Signin(req.Email, req.Password)
+		if err != nil {
+			http.Error(w, "Failed to sign in: "+err.Error(), http.StatusUnauthorized)
+			return
+		}
 		user := signinResp.User
 
 		w.Header().Set("Content-Type", "application/json")
@@ -74,12 +82,17 @@ func main() {
 
 	http.HandleFunc("/signout", func(w http.ResponseWriter, r *http.Request) {
 		// Handle signout logic
-		auth.Signout()
+		err := auth.Signout()
+		if err != nil {
+			http.Error(w, "Failed to sign out: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 	/*----------------------------------------------------*/
 	// Inference service route
 	http.HandleFunc("/id_food", inference.IdentifyFood)
+	http.HandleFunc("/webhook/inference_result", inference.InferenceWebhook)
 	/*----------------------------------------------------*/
 	// Meal planner routes
 	http.HandleFunc("/evaluate", mealplanner.EvaluateMeal)

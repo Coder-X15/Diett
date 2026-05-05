@@ -1,1 +1,4 @@
-fastapi
+numpy
+onnxruntime
+pillow
+supabase
