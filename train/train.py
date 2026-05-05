@@ -147,7 +147,7 @@ def train_loop() -> None:
         print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Validation Loss: {eval_loss:.4f}, Accuracy: {accuracy:.4f}")
     # save model
     torch.onnx.export(model, 
-                      torch.randn(1, 3, 224, 224), 
+                      torch.cuda.FloatTensor(torch.randn(1, 3, 224, 224)), 
                       "model.onnx",
                       export_params=True,    # Store weights inside the file
                       opset_version=12,      # Version 12 is highly stable for ResNet
