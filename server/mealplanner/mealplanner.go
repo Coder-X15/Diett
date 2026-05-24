@@ -75,6 +75,8 @@ func PlanMeal(w http.ResponseWriter, r *http.Request) {
 
 // get the nutritional information for a meal
 func GetNutritionalInfo(w http.ResponseWriter, r *http.Request) {
+	mealPlannerApi := os.Getenv("MEAL_PLANNER_API")
+
 	// send a request to the meal planner API using the request body
 	var mealplan Mealplan // the result from the meal planner API will be a meal plan for a day
 	bodyBytes, _ := io.ReadAll(r.Body)
@@ -95,7 +97,7 @@ func GetNutritionalInfo(w http.ResponseWriter, r *http.Request) {
 	// write the response from the meal planner API back to the client
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
-	
+
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, "Failed to read response", http.StatusInternalServerError)

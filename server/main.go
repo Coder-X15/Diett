@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"server/auth"
+	"server/chat"
 	"server/db"
 	"server/inference"
-	"server/mealplanner"
 
 	"github.com/joho/godotenv"
 )
@@ -93,11 +93,10 @@ func main() {
 	// Inference service route
 	http.HandleFunc("/id_food", inference.IdentifyFood)
 	http.HandleFunc("/webhook/inference_result", inference.InferenceWebhook)
+	http.HandleFunc("/inference_status", inference.GetInferenceStatus)
 	/*----------------------------------------------------*/
-	// Meal planner routes
-	http.HandleFunc("/evaluate", mealplanner.EvaluateMeal)
-	http.HandleFunc("/plan", mealplanner.PlanMeal)
-	http.HandleFunc("/nutrition", mealplanner.GetNutritionalInfo)
+	// Chat route
+	http.HandleFunc("/chat", chat.SendConversationToOllamaAPI)
 	/*----------------------------------------------------*/
 	// Start the server
 	http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux))

@@ -1,14 +1,8 @@
-FROM golang:1.22.6-alpine3.20 as dev
+FROM golang:1.26.0
 
 WORKDIR /app
 
 COPY . .
-
-RUN addgroup -S golang && adduser -S golang -G golang
-
-RUN chown -R golang:golang /app
-
-USER golang
 
 RUN go mod tidy
 

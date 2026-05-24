@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import './Dashboard.css';
 import FoodIdentifier from './FoodIdentifier';
-import MealPlanner from './MealPlanner';
-import NutritionInfo from './NutritionInfo';
+import ChatPage from './ChatPage';
 
 function Dashboard({ user, onSignout, apiUrl }) {
   const [activeTab, setActiveTab] = useState('identify');
@@ -29,16 +28,10 @@ function Dashboard({ user, onSignout, apiUrl }) {
           Identify Food
         </button>
         <button
-          className={`nav-btn ${activeTab === 'plan' ? 'active' : ''}`}
-          onClick={() => setActiveTab('plan')}
+          className={`nav-btn ${activeTab === 'chat' ? 'active' : ''}`}
+          onClick={() => setActiveTab('chat')}
         >
-          Plan Meal
-        </button>
-        <button
-          className={`nav-btn ${activeTab === 'nutrition' ? 'active' : ''}`}
-          onClick={() => setActiveTab('nutrition')}
-        >
-          Nutrition Info
+          AI Dietician
         </button>
       </nav>
 
@@ -46,11 +39,8 @@ function Dashboard({ user, onSignout, apiUrl }) {
         {activeTab === 'identify' && (
           <FoodIdentifier apiUrl={apiUrl} />
         )}
-        {activeTab === 'plan' && (
-          <MealPlanner apiUrl={apiUrl} />
-        )}
-        {activeTab === 'nutrition' && (
-          <NutritionInfo apiUrl={apiUrl} />
+        {activeTab === 'chat' && (
+          <ChatPage />
         )}
       </main>
     </div>

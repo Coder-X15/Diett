@@ -3,13 +3,9 @@
 ### Signing In/ Signup
 - **Type:** Email + password signup
 - Signup triggers Supabase auth addition flow, `user` role granted
-### Meal Planning
-1. **Scanning Meal for Nutritional Information** (`v1` iteration):
-    - User scans the meal via their camera from the "Plan my Meal" tab, sends it to the **_inference api_** for **_identification_**
-    - User can add it to their **_meal timetable_** or just take information regarding the meal to better prune it to meet their health goals
-2. **Meal planning from menu** (`v2` iteration):
-    - Menu sreenshot can be sent to **_inference api_** to retreive an **_information string_** (text extracted from menu via OCR or by processing documents)
-    - **_Information string_** can be used to develop meal timetable
+### AI Dietician Chat
+- **Type:** Interactive Chat Interface
+- Users can chat with Diett, a fine-tuned LLM (Ollama), to get personalized meal recommendations and nutritional advice.
 ### Setting Dietary Goals (`v1.1` iteration)
 - Set goals from any of these:
     - **_Weight loss_**
@@ -30,9 +26,9 @@
 ## Iteration Tracking:
 1. `v1`:
     - Auth
-    - Meal planning using scanner
+    - AI Dietician Chat integration
 2. `v1.1`:
     - Set dietary goals
     - Track diet and physical activity
 3. `v2`:
-    - Meal planning from menu
+    - Additional AI-powered diet planning tools

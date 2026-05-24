@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './FoodIdentifier.css';
+import { useAuth } from '../context/AuthContext';
 
 function FoodIdentifier({ apiUrl }) {
   const [image, setImage] = useState('');
   const [result, setResult] = useState(null);
-  const [nutritionResult, setNutritionResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -12,6 +12,7 @@ function FoodIdentifier({ apiUrl }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const  { user } = useAuth();
 
   useEffect(() => {
     return () => {
@@ -65,7 +66,6 @@ function FoodIdentifier({ apiUrl }) {
   const clearImage = () => {
     setImage('');
     setResult(null);
-    setNutritionResult(null);
     setError('');
   };
 
@@ -89,7 +89,6 @@ function FoodIdentifier({ apiUrl }) {
     setLoading(true);
     setError('');
     setResult(null);
-    setNutritionResult(null);
 
     try {
       const inferenceResponse = await fetch(`${apiUrl}/id_food`, {
@@ -97,7 +96,10 @@ function FoodIdentifier({ apiUrl }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image }),
+        body: JSON.stringify({
+          user_id: user ? user.id : null,
+          image: image // Base64-encoded image data
+        }),
       });
 
       if (!inferenceResponse.ok) {
@@ -105,45 +107,31 @@ function FoodIdentifier({ apiUrl }) {
       }
 
       const data = await inferenceResponse.json();
-      setResult(data);
 
-      let foodClass = "Unknown";
-      if (Array.isArray(data) && data.length > 0) {
-        foodClass = data[0].food || data[0].class || data[0].name || "Unknown";
-      } else if (typeof data === 'string') {
-        foodClass = data;
-      } else if (data.class) foodClass = data.class;
-      else if (data.name) foodClass = data.name;
-      else if (data.food) foodClass = data.food;
-      else if (data.result) foodClass = data.result;
-      else if (typeof data === 'object') {
-        const firstVal = Object.values(data)[0];
-        if (firstVal && typeof firstVal === 'string') foodClass = firstVal;
-        else foodClass = JSON.stringify(firstVal);
-      }
-
-      if (foodClass && foodClass !== "Unknown") {
-        const nutritionMenu = {
-          day: "Today",
-          breakfast: [foodClass],
-          lunch: [],
-          dinner: []
-        };
-        const nutritionResponse = await fetch(`${apiUrl}/nutrition`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(nutritionMenu),
-        });
-
-        if (nutritionResponse.ok) {
-          const nutritionData = await nutritionResponse.json();
-          setNutritionResult(nutritionData);
-        } else {
-          console.error("Failed to query nutrition info");
+      // Poll the backend for the inference result
+      let inferenceResult = null;
+      let attempts = 0;
+      const maxAttempts = 30; // 60 seconds max
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds
+        
+        const statusResponse = await fetch(`${apiUrl}/inference_status?id=${data.id}`);
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          if (statusData.status === 'COMPLETED') {
+            inferenceResult = statusData.identified_food_name ? { identified_food_name: statusData.identified_food_name } : null;
+            break;
+          }
         }
+        attempts++;
       }
+
+      if (!inferenceResult) {
+        throw new Error('Food identification timed out. Please try again.');
+      }
+
+      setResult(inferenceResult);
     } catch (err) {
       setError('Error identifying food: ' + err.message);
     } finally {
@@ -216,31 +204,7 @@ function FoodIdentifier({ apiUrl }) {
       {result && (
         <div className="result-card">
           <h3>Identified Food</h3>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-          
-          {nutritionResult && (
-            <div className="nutrition-section">
-                <h4>Nutritional Info</h4>
-                <div className="nutrition-grid">
-                    <div className="nutrition-item">
-                        <span className="nutrition-value">{nutritionResult.calories || 0}</span>
-                        <span className="nutrition-label">Calories</span>
-                    </div>
-                    <div className="nutrition-item">
-                        <span className="nutrition-value">{nutritionResult.protein || 0}g</span>
-                        <span className="nutrition-label">Protein</span>
-                    </div>
-                    <div className="nutrition-item">
-                        <span className="nutrition-value">{nutritionResult.carbs || 0}g</span>
-                        <span className="nutrition-label">Carbs</span>
-                    </div>
-                    <div className="nutrition-item">
-                        <span className="nutrition-value">{nutritionResult.fat || 0}g</span>
-                        <span className="nutrition-label">Fat</span>
-                    </div>
-                </div>
-            </div>
-          )}
+          <pre>{result.identified_food_name}</pre>
         </div>
       )}
     </div>

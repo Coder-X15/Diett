@@ -83,53 +83,19 @@ Identifies food from an image using an external inference API.
 **Response:** 
 The response is proxied from the external inference API. Typically returns JSON with food identification results.
 
-## Meal Planning Endpoints
+## Chat Endpoint
 
-These endpoints are defined in the code but not yet wired into the main server. They proxy requests to an external meal planner API.
-
-### POST /evaluate
-Evaluates a meal against user dietary restrictions and preferences.
+### POST /chat
+Sends a conversation to the hosted Ollama AI Dietician model.
 
 **Request Body:**
 ```json
-{
-  "day": "Monday",
-  "breakfast": ["oatmeal", "banana"],
-  "lunch": ["salad", "chicken"],
-  "dinner": ["pasta", "vegetables"]
-}
-```
-
-**Response:** 
-The response is proxied from the external meal planner API. Typically returns an evaluated meal plan.
-
-### POST /plan
-Plans a meal for a day based on user dietary restrictions and preferences.
-
-**Request Body:**
-```json
-{
-  "day": "Monday",
-  "breakfast": ["oatmeal", "banana"],
-  "lunch": ["salad", "chicken"],
-  "dinner": ["pasta", "vegetables"]
-}
-```
-
-**Response:** 
-The response is proxied from the external meal planner API. Typically returns a planned meal for the day.
-
-### POST /nutrition
-Gets nutritional information for a meal.
-
-**Request Body:**
-```json
-{
-  "day": "Monday",
-  "breakfast": ["oatmeal", "banana"],
-  "lunch": ["salad", "chicken"],
-  "dinner": ["pasta", "vegetables"]
-}
+[
+  {
+    "role": "user",
+    "content": "What should I eat for lunch?"
+  }
+]
 ```
 
 **Response:**
@@ -151,6 +117,5 @@ Gets nutritional information for a meal.
 ## Notes
 - All endpoints expect JSON request bodies where applicable.
 - Authentication is handled via Supabase.
-- Food identification and meal planning are proxied to external services.
-- The meal planning endpoints (/evaluate, /plan, /nutrition) are implemented but not yet registered in the main server router.</content>
+- Food identification is proxied to external services.
 <parameter name="filePath">/home/sam-ruben-abraham/dietplanner/apiDocumentation.md

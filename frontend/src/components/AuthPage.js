@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import './AuthPage.css';
+import { useAuth } from '../context/AuthContext';
 
-function AuthPage({ onSignup, onSignin }) {
+function AuthPage() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { signup, signin, loading } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       if (isSignup) {
-        await onSignup(email, password);
+        await signup(email, password);
       } else {
-        await onSignin(email, password);
+        await signin(email, password);
       }
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Authentication error:', err);
+      alert('Authentication failed: ' + err.message);
     }
   };
 

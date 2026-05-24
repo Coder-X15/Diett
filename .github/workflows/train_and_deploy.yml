@@ -3,7 +3,7 @@ on:
         branches: [main]
     workflow_dispatch: # added for manual trigger, remove once fully built
 jobs:
-    train:
+    train_and_deploy:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -29,21 +29,47 @@ jobs:
               with:
                 name: trained-model
                 path: ./log/model.onnx
-            - name: Publishing the classes.txt file as an artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: classes-file
-                path: ./log/classes.txt
-    #         - name: Moving the model.pth file to services/inference
-    #           run: mv ./log/model.pth ./services/inference/model.pth
-    # deploy:
-    #     needs: train
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - uses: actions/checkout@v2
-    #         - name: Deploy on AWS
-    #           uses: aws-actions/configure-aws-credentials@v1
-    #           with:
-    #               aws-access-key-id: {{ secrets.AWS_ACCESS_KEY_ID }}
-    #               aws-secret-access-key: {{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #               aws-region: ap-south-2
+            # - name: Publishing the classes.txt file as an artifact
+            #   uses: actions/upload-artifact@v4
+            #   with:
+            #     name: classes-file
+            #     path: ./log/classes.txt
+            - name: Moving the model.pth file to services/inference
+              run: mv ./log/model.pth ./services/inference/model.pth
+            - name: Deploy on AWS
+              env:
+                  USERNAME: ${{ secrets.EC2_SSH_USER }}
+                  HOST: ${{ secrets.EC2_SSH_HOST }}
+                  PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+              run: |
+                run: |
+                  echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+                  ssh -o StrictHostKeyChecking=no -i private_key ${USERNAME}@${HOST} '
+                    # install git if not installed
+                    if ! command -v git &> /dev/null; then
+                      sudo apt-get update && sudo apt-get install -y git
+                    fi
+                    # clone the repository if it doesn't exist
+                    if [ ! -d "diett" ]; then
+                      git clone https://github.com/Coder-X15/Diett.git
+                    else
+                      cd Diett
+                      git pull
+                    fi
+                    # install docker and docker-compose if not installed
+                    if ! command -v docker &> /dev/null; then
+                      sudo apt-get update && sudo apt-get install -y docker-ce docker-compose
+                    fi
+                    # navigate to the project directory and run docker-compose
+                    cd Diett && sudo docker-compose up -d --build
+                  '
+            - name : Deploy frontend in Vercel
+              env:
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: |
+                npm install -g vercel
+                vercel login
+                
+                # build and deploy the frontend
+                cd frontend
+                vercel --prod --token $VERCEL_TOKEN

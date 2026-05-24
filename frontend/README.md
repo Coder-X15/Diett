@@ -5,9 +5,8 @@ A React-based frontend for the Diet Planner application.
 ## Features
 
 - **Authentication**: Sign up and sign in with email and password
+- **AI Dietician Chat**: Chat with an AI assistant for diet and nutrition advice.
 - **Food Identification**: Upload images to identify foods
-- **Meal Planning**: Plan and evaluate daily meals
-- **Nutrition Information**: Get nutritional details for any meal
 
 ## Setup
 
@@ -44,10 +43,9 @@ npm build
 src/
 ├── components/
 │   ├── AuthPage.js         # Login/Signup
+│   ├── ChatPage.js         # AI dietician chat
 │   ├── Dashboard.js        # Main dashboard
 │   ├── FoodIdentifier.js   # Food image identification
-│   ├── MealPlanner.js      # Meal planning and evaluation
-│   └── NutritionInfo.js    # Nutritional information lookup
 ├── App.js                  # Main app component
 └── index.js               # Entry point
 ```
@@ -59,7 +57,5 @@ The frontend communicates with these backend endpoints:
 - `POST /signup` - User registration
 - `POST /signin` - User login
 - `POST /signout` - User logout
+- `POST /chat` - Chat with the AI dietician
 - `POST /id_food` - Identify food from image
-- `POST /plan` - Plan meals for a day
-- `POST /evaluate` - Evaluate meals against dietary restrictions
-- `POST /nutrition` - Get nutritional information

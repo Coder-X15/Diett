@@ -2,3 +2,4 @@ numpy
 onnxruntime
 pillow
 supabase
+dotenv
