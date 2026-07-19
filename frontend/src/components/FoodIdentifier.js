@@ -1,214 +1,290 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './FoodIdentifier.css';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import './FoodIdentifier.css';
 
-function FoodIdentifier({ apiUrl }) {
-  const [image, setImage] = useState('');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
+const FoodIdentifier = ({ apiUrl }) => {
+    const { user } = useAuth();
+    const [file, setFile] = useState(null);
+    // Preview can be from a file (object URL) or camera (data URL)
+    const [preview, setPreview] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [identificationId, setIdentificationId] = useState(null);
+    const [result, setResult] = useState(null);
+    const [nutritionData, setNutritionData] = useState(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [stream, setStream] = useState(null);
+    const videoRef = useRef(null);
 
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
-  const  { user } = useAuth();
-
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isCameraOpen && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-    }
-  }, [isCameraOpen]);
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      streamRef.current = stream;
-      setIsCameraOpen(true);
-      setError('');
-    } catch (err) {
-      setError('Error accessing camera: ' + err.message);
-      setIsCameraOpen(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraOpen(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg');
-      setImage(dataUrl);
-      stopCamera();
-    }
-  };
-
-  const clearImage = () => {
-    setImage('');
-    setResult(null);
-    setError('');
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleIdentify = async () => {
-    if (!image) {
-      setError('Please select or capture an image');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setResult(null);
-
-    try {
-      const inferenceResponse = await fetch(`${apiUrl}/id_food`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: user ? user.id : null,
-          image: image // Base64-encoded image data
-        }),
-      });
-
-      if (!inferenceResponse.ok) {
-        throw new Error('Failed to identify food');
-      }
-
-      const data = await inferenceResponse.json();
-
-      // Poll the backend for the inference result
-      let inferenceResult = null;
-      let attempts = 0;
-      const maxAttempts = 30; // 60 seconds max
-      
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds
-        
-        const statusResponse = await fetch(`${apiUrl}/inference_status?id=${data.id}`);
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.json();
-          if (statusData.status === 'COMPLETED') {
-            inferenceResult = statusData.identified_food_name ? { identified_food_name: statusData.identified_food_name } : null;
-            break;
-          }
+    // Cleanup function to stop camera stream
+    const stopCamera = useCallback(() => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            setStream(null);
+            setIsCameraOpen(false);
         }
-        attempts++;
-      }
+    }, [stream]);
 
-      if (!inferenceResult) {
-        throw new Error('Food identification timed out. Please try again.');
-      }
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            stopCamera(); // Close camera if a file is selected
+            setFile(selectedFile);
+            setPreview(URL.createObjectURL(selectedFile));
+            // Reset previous results
+            setResult(null);
+            setNutritionData(null);
+            setIdentificationId(null);
+            setError('');
+        }
+    };
 
-      setResult(inferenceResult);
-    } catch (err) {
-      setError('Error identifying food: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const openCamera = async () => {
+        if (isCameraOpen) return;
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            setStream(mediaStream);
+            setIsCameraOpen(true);
+            // Reset file/preview state
+            setFile(null);
+            setPreview(null);
+            setResult(null);
+            setNutritionData(null);
+            setError('');
+        } catch (err) {
+            setError('Could not access the camera. Please check permissions.');
+            console.error("Camera error:", err);
+        }
+    };
 
-  return (
-    <div className="food-identifier-card">
-      <h2>Food Identifier</h2>
-      <p className="subtitle">Upload or capture a food image to identify it</p>
+    const handleCapture = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            setPreview(dataUrl);
+            setFile(null); // It's not a file object
+            stopCamera();
+        }
+    };
 
-      {!isCameraOpen && (
-        <div className="camera-controls">
-          <button className="camera-btn" onClick={startCamera}>Open Camera</button>
+    const removeImage = () => {
+        setFile(null);
+        setPreview(null);
+        setResult(null);
+        setNutritionData(null);
+        setError('');
+        // If the preview was an object URL, revoke it to prevent memory leaks
+        if (preview && preview.startsWith('blob:')) {
+            URL.revokeObjectURL(preview);
+        }
+    };
+
+    // Effect to handle video stream
+    useEffect(() => {
+        if (isCameraOpen && videoRef.current && stream) {
+            videoRef.current.srcObject = stream;
+        }
+        // Cleanup stream on component unmount
+        return () => stopCamera();
+    }, [isCameraOpen, stream, stopCamera]);
+
+    const toBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+    const handleIdentify = async () => {
+        if ((!file && !preview) || !user) {
+            setError('Please select or capture an image and be logged in.');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        setResult(null);
+        setNutritionData(null);
+        setIdentificationId(null);
+
+        try {
+            let base64Image;
+            if (file) {
+                base64Image = await toBase64(file);
+            } else { // It's a data URL from the camera
+                base64Image = preview;
+            }
+
+            const response = await fetch(`${apiUrl}/id_food`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    image: base64Image,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to submit image for identification.');
+            }
+
+            const data = await response.json();
+            if (data.status === 'SUBMITTED' && data.id) {
+                setIdentificationId(data.id);
+            } else {
+                throw new Error('Invalid response from server after submission.');
+            }
+
+        } catch (err) {
+            setError(`Identification error: ${err.message}`);
+            setLoading(false);
+        }
+    };
+
+    const fetchNutritionInfo = useCallback(async (foodName) => {
+        const ninjasApiKey = process.env.REACT_APP_NINJAS_API_KEY;
+        if (!ninjasApiKey) {
+            setError('Nutrition API key is not configured.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.api-ninjas.com/v1/nutrition?query=${foodName}`, {
+                headers: { 'X-Api-Key': ninjasApiKey },
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to fetch nutrition data.');
+            }
+
+            const data = await response.json();
+            setNutritionData(data);
+
+        } catch (err) {
+            setError(`Nutrition fetch error: ${err.message}`);
+        }
+    }, []);
+
+    // Polling effect to check for identification status
+    useEffect(() => {
+        if (!identificationId) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const response = await fetch(`${apiUrl}/inference_status?id=${identificationId}`);
+                if (!response.ok) {
+                    // Stop polling on error, but don't overwrite primary error
+                    console.error('Polling failed');
+                    clearInterval(interval);
+                    return;
+                }
+
+                const data = await response.json();
+                if (data.status === 'COMPLETED') {
+                    setResult(data);
+                    setLoading(false);
+                    clearInterval(interval);
+                    // Once we have the food name, fetch its nutritional info
+                    if (data.identified_food_name) {
+                        fetchNutritionInfo(data.identified_food_name);
+                    }
+                }
+            } catch (err) {
+                setError(`Polling error: ${err.message}`);
+                setLoading(false);
+                clearInterval(interval);
+            }
+        }, 3000); // Poll every 3 seconds
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, [identificationId, apiUrl, fetchNutritionInfo]);
+
+    return (
+        <div className="food-identifier-card">
+            <h2>Food Identifier</h2>
+            <p className="subtitle">Upload an image to identify the food and see its nutritional facts.</p>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {isCameraOpen ? (
+                <div className="camera-view">
+                    <video ref={videoRef} autoPlay playsInline className="video-feed" />
+                    <div className="camera-controls">
+                        <button onClick={handleCapture} className="capture-btn">Capture</button>
+                        <button onClick={stopCamera} className="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {!preview && (
+                        <div className="image-upload">
+                            <label htmlFor="file-upload" className="file-label">
+                                Choose Image
+                            </label>
+                            <input type="file" accept="image/*" onChange={handleFileChange} id="file-upload" className="file-input" />
+                            <button onClick={openCamera} className="camera-btn">Use Camera</button>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {preview && !isCameraOpen && (
+                <div className="image-preview">
+                    <img src={preview} alt="Preview" />
+                    <button onClick={removeImage} className="remove-image-btn">Remove Image</button>
+                </div>
+            )}
+
+            {preview && !loading && (
+                <button onClick={handleIdentify} disabled={loading} className="identify-btn">
+                    {loading ? 'Identifying...' : 'Identify Food'}
+                </button>
+            )}
+
+            {loading && <p>Processing your image. This may take a moment...</p>}
+
+            {result && (
+                <div className="result-card">
+                    <h3>Identification Complete</h3>
+                    <p><strong>Identified Food:</strong> {result.identified_food_name || 'Could not identify'}</p>
+                </div>
+            )}
+
+            {nutritionData && (
+                <div className="nutrition-section">
+                    <h4>Nutritional Information (per 100g)</h4>
+                    {nutritionData.length > 0 ? (
+                        <div className="nutrition-grid">
+                            <div className="nutrition-item">
+                                <span className="nutrition-value">{nutritionData[0].calories}</span>
+                                <span className="nutrition-label">Calories</span>
+                            </div>
+                            <div className="nutrition-item">
+                                <span className="nutrition-value">{nutritionData[0].protein_g}g</span>
+                                <span className="nutrition-label">Protein</span>
+                            </div>
+                            <div className="nutrition-item">
+                                <span className="nutrition-value">{nutritionData[0].carbohydrates_total_g}g</span>
+                                <span className="nutrition-label">Carbs</span>
+                            </div>
+                            <div className="nutrition-item">
+                                <span className="nutrition-value">{nutritionData[0].fat_total_g}g</span>
+                                <span className="nutrition-label">Fat</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <p>No nutritional data found for the identified food.</p>
+                    )}
+                </div>
+            )}
         </div>
-      )}
-
-      {isCameraOpen && (
-        <div className="camera-view">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="video-feed"
-          ></video>
-          <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-          <div className="camera-actions">
-            <button className="capture-btn" onClick={capturePhoto}>Capture Photo</button>
-            <button className="cancel-btn" onClick={stopCamera}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {!isCameraOpen && (
-        <div className="image-upload">
-            <span style={{color: '#888', margin: '0 10px'}}>OR</span>
-          <br/>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            id="image-input"
-            className="file-input"
-          />
-          <label htmlFor="image-input" className="file-label">
-            Choose Image
-          </label>
-        </div>
-      )}
-
-      {image && !isCameraOpen && (
-        <div className="image-preview">
-          <img src={image} alt="Selected food" />
-          <button className="remove-image-btn" onClick={clearImage}>Remove Image</button>
-        </div>
-      )}
-
-      {error && <div className="error-message">{error}</div>}
-
-      <button
-        className="identify-btn"
-        onClick={handleIdentify}
-        disabled={!image || loading || isCameraOpen}
-      >
-        {loading ? 'Analyzing...' : 'Identify Food'}
-      </button>
-
-      {result && (
-        <div className="result-card">
-          <h3>Identified Food</h3>
-          <pre>{result.identified_food_name}</pre>
-        </div>
-      )}
-    </div>
-  );
-}
+    );
+};
 
 export default FoodIdentifier;

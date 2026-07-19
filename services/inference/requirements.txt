@@ -3,3 +3,4 @@ onnxruntime
 pillow
 supabase
 dotenv
+requests

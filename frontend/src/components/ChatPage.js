@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([
@@ -26,7 +27,6 @@ const ChatPage = () => {
         setIsLoading(true);
 
         try {
-            // The backend expects an array of messages.
             const response = await fetch('http://localhost:8080/chat', {
                 method: 'POST',
                 headers: {
@@ -39,8 +39,9 @@ const ChatPage = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // The backend returns a single message object for the assistant's reply.
-            const assistantMessage = await response.json();
+            // The backend returns a JSON-encoded string which we parse.
+            const assistantReplyContent = await response.json();
+            const assistantMessage = { role: 'assistant', content: assistantReplyContent };
             setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
         } catch (error) {
@@ -66,7 +67,12 @@ const ChatPage = () => {
                     <div key={index} style={styles.messageWrapper(msg.role)}>
                         <div style={styles.messageBubble(msg.role)}>
                             <p style={styles.messageRole}>{msg.role === 'user' ? 'You' : 'Diett'}</p>
-                            <p style={styles.messageContent}>{msg.content}</p>
+                            <div style={styles.messageContent}>
+                                {msg.role === 'assistant'
+                                    ? <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                    : msg.content
+                                }
+                            </div>
                         </div>
                     </div>
                 ))}

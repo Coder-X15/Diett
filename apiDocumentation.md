@@ -68,6 +68,50 @@ Logs out the current user.
 
 **Response:** HTTP 200 OK
 
+## Meal Plan Endpoints
+
+### GET /mealplan
+Fetches an existing meal plan for a specific user and day.
+
+**Query Parameters:**
+- `user_id` (string, required): The UUID of the user.
+- `day` (string, required): The day of the week (e.g., "Monday").
+
+**Success Response (200 OK):**
+```json
+{
+  "id": "plan-uuid",
+  "user_id": "user-uuid",
+  "day_of_week": "Monday",
+  "breakfast": "Oats, Berries",
+  "lunch": "Chicken Salad",
+  "dinner": "Salmon, Asparagus",
+  "notes": null,
+  "created_at": "2023-10-27T10:00:00Z",
+  "updated_at": "2023-10-27T10:00:00Z"
+}
+```
+
+**Error Response (404 Not Found):**
+Returned if no plan exists for the given user and day.
+
+### POST /mealplan
+Creates a new meal plan or updates an existing one (upsert).
+
+**Request Body:**
+```json
+{
+  "user_id": "user-uuid",
+  "day": "Monday",
+  "breakfast": ["Oats", "Berries", "Nuts"],
+  "lunch": ["Chicken Salad Sandwich"],
+  "dinner": ["Salmon", "Asparagus", "Quinoa"]
+}
+```
+
+**Success Response (200 OK):**
+Returns the created or updated meal plan object.
+
 ## Food Identification Endpoint
 
 ### POST /id_food
@@ -112,7 +156,6 @@ Sends a conversation to the hosted Ollama AI Dietician model.
 - `SUPABASE_URL`: Supabase project URL
 - `SUPABASE_KEY`: Supabase API key
 - `INFERENCE_API`: URL for the external food identification API
-- `MEAL_PLANNER_API`: URL for the external meal planner API
 
 ## Notes
 - All endpoints expect JSON request bodies where applicable.

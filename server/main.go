@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"server/auth"
 	"server/chat"
 	"server/db"
 	"server/inference"
+
+	"server/mealplanner"
 
 	"github.com/joho/godotenv"
 )
@@ -97,7 +100,17 @@ func main() {
 	/*----------------------------------------------------*/
 	// Chat route
 	http.HandleFunc("/chat", chat.SendConversationToOllamaAPI)
+
+	/*----------------------------------------------------*/
+	// Meal planner routes
+	http.HandleFunc("/mealplans", mealplanner.GetMealPlans)
+	http.HandleFunc("/mealplans/save", mealplanner.SaveMealPlan)
+
 	/*----------------------------------------------------*/
 	// Start the server
-	http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux))
+	err := http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux))
+	if err != nil {
+		log.Printf("Error happened: %v", err)
+		http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux))
+	}
 }

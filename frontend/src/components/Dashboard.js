@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import './Dashboard.css';
 import FoodIdentifier from './FoodIdentifier';
 import ChatPage from './ChatPage';
+import MealPlanner from './MealPlanner';
 
 function Dashboard({ user, onSignout, apiUrl }) {
-  const [activeTab, setActiveTab] = useState('identify');
+  const [activeTab, setActiveTab] = useState('mealPlanner');
 
   return (
     <div className="dashboard">
@@ -33,6 +34,12 @@ function Dashboard({ user, onSignout, apiUrl }) {
         >
           AI Dietician
         </button>
+        <button
+          className={`nav-btn ${activeTab === 'mealPlanner' ? 'active' : ''}`}
+          onClick={() => setActiveTab('mealPlanner')}
+        >
+          Meal Planner
+        </button>
       </nav>
 
       <main className="dashboard-content">
@@ -41,6 +48,9 @@ function Dashboard({ user, onSignout, apiUrl }) {
         )}
         {activeTab === 'chat' && (
           <ChatPage />
+        )}
+        {activeTab === 'mealPlanner' && (
+          <MealPlanner apiUrl={apiUrl} />
         )}
       </main>
     </div>
